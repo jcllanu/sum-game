@@ -109,7 +109,7 @@ def backtracking(current_cell, n, numbers_left, current_solution, solutions_list
         numbers_left[i-1]+=1
 
 groups=dict({})
-for n in range(3,11):
+for n in range(10,11):
     solutions_list=[]
     backtracking([0,0], n, [n]*n, np.zeros((n,n)),solutions_list)
     groups[n]=solutions_list
