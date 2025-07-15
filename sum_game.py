@@ -85,7 +85,7 @@ def update_game_board(my_solution, game_board, cell_groups, cell_group_sum, curr
             my_solution[cell[0]][cell[1]] = 2
             text = 'Target sum: ' + str(cell_group_sum) +' Current sum: ' + str(current_groups_sums[group_index])+ '\nThe number '+\
                    str(game_board[cell[0]][cell[1]])+ ' can\'t be part of the solution.'
-            assert not game_solution[cell[0]][cell[1]], "ERROR!!!!"
+            assert not game_solution[cell[0]][cell[1]],  "ERROR!!!!" + print(my_solution) +'\n'+print(game_board)+'\n'+print(game_solution)
             return [cell, text]
     # Rule 2
     unset_cells=[cell for cell in cell_groups[group_index] if my_solution[cell[0]][cell[1]]==0]
@@ -99,7 +99,7 @@ def update_game_board(my_solution, game_board, cell_groups, cell_group_sum, curr
                    ' can\'t be reached using '+\
                    str([int(game_board[cell[0]][cell[1]]) for cell in unset_cells[:i]+unset_cells[i+1:]])
             
-            assert not game_solution[cell[0]][cell[1]], "ERROR!!!!"
+            assert not game_solution[cell[0]][cell[1]],  "ERROR!!!!" + print(my_solution) +'\n'+print(game_board)+'\n'+print(game_solution)
             return [cell, text]
         if not is_possible_to_sum(cell_group_sum - current_groups_sums[group_index], [game_board[cell[0]][cell[1]] for cell in unset_cells[:i]+unset_cells[i+1:]]):
             my_solution[cell[0]][cell[1]] = 1
@@ -112,7 +112,7 @@ def update_game_board(my_solution, game_board, cell_groups, cell_group_sum, curr
                 if cell in cell_groups[j]:
                     current_groups_sums[j] += game_board[cell[0]][cell[1]]
 
-            assert game_solution[cell[0]][cell[1]], "ERROR!!!!"
+            assert game_solution[cell[0]][cell[1]], "ERROR!!!!" + print(my_solution) +'\n'+print(game_board)+'\n'+print(game_solution)
             return [cell, text]
     return []
 
@@ -244,7 +244,7 @@ def print_board(game_board, cell_groups, cell_groups_sums, my_solution, cell, ex
     return result
 
 
-def solve_game(game_board, cell_groups, cell_groups_sums, game_solution, root):
+def solve_game(user, game_board, cell_groups, cell_groups_sums, game_solution, root=None):
     N = len(game_board)
     my_solution = np.zeros((N, N), int)
     current_groups_sums = np.zeros(len(cell_groups), int)
@@ -254,9 +254,14 @@ def solve_game(game_board, cell_groups, cell_groups_sums, game_solution, root):
     text=""
 
     while True:
-        output = print_board(game_board, cell_groups, cell_groups_sums, my_solution, cell, text, root, mistakes, hints)
+        update=False
+        if USER:
+            output = print_board(game_board, cell_groups, cell_groups_sums, my_solution, cell, text, root, mistakes, hints)
+        else:
+            output={}
 
         if output != {}:
+            update=True
             right_left = output[0]
             cell = output[1]
 
@@ -281,25 +286,43 @@ def solve_game(game_board, cell_groups, cell_groups_sums, game_solution, root):
                 if hint_output != []:
                     cell=hint_output[0]
                     text=hint_output[1]
+                    update=True
                     # print(cell_groups_sums[:N])
                     # print(my_solution,'\n')
                     break
-
+        if not update:
+            text="Unable to give a hint :("
+            cell=[-1,-1]
+            if not USER:
+                root = tk.Tk()
+                root.title("Game Board")
+                size=70+50*N
+                root.geometry(f"{size}x{size+50}+200+100")
+                print_board(game_board, cell_groups, cell_groups_sums, my_solution, cell, text, root, mistakes, hints)
+                return False
         if not any(0 in sublist for sublist in my_solution):
             break
+    return True
 
 
+if __name__=="__main__":
+    USER=False
+    games_completed={4:0, 5:0, 6:0, 7:0, 8:0}
+    while True:
+        if USER:
+            N = int(input("Select the size of the board (4-9): "))
+        else:
+            N=random.randint(4,8)
 
-N = 6
-# N=random.randint(3,10)
-game_board, cell_groups, cell_groups_sums, game_solution = init_board(N) 
+        game_board, cell_groups, cell_groups_sums, game_solution = init_board(N) 
 
-
-root = tk.Tk()
-root.title("Game Board")
-size=70+50*N
-root.geometry(f"{size}x{size+50}+200+100")
-
-solve_game(game_board, cell_groups, cell_groups_sums, game_solution, root)
-
+        if USER:
+            root = tk.Tk()
+            root.title("Game Board")
+            size=70+50*N
+            root.geometry(f"{size}x{size+50}+200+100")
+            solve_game(USER, game_board, cell_groups, cell_groups_sums, game_solution, root)
+        else:
+            games_completed[N]+= 1 if solve_game(USER, game_board, cell_groups, cell_groups_sums, game_solution) else 0
+            print(games_completed)
 

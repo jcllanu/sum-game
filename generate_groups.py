@@ -78,7 +78,7 @@ def impossible_continue_solution(current_solution, numbers_left, current_cell, n
             
                 
 def backtracking(current_cell, n, numbers_left, current_solution, solutions_list):
-    if len(solutions_list) > 1000:
+    if len(solutions_list) > 10000:
         return
     max_number=1
     while max_number <= n:
@@ -109,7 +109,7 @@ def backtracking(current_cell, n, numbers_left, current_solution, solutions_list
         numbers_left[i-1]+=1
 
 groups=dict({})
-for n in range(10,11):
+for n in range(7,10):
     solutions_list=[]
     backtracking([0,0], n, [n]*n, np.zeros((n,n)),solutions_list)
     groups[n]=solutions_list
@@ -117,13 +117,3 @@ for n in range(10,11):
     # Save
     data = np.array(solutions_list)
     np.save('data' + str(n) +'.npy', data)
-
-
-# Load
-loaded_data = np.load('data.npy')
-print(loaded_data)
-
-# for solution in solutions_list:
-#     print(solution,'\n')
-
-# print(len(solutions_list)) 
