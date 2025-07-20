@@ -3,6 +3,13 @@ import random
 import tkinter as tk
 from tkinter import font
 
+def rotate_matrix_right(matrix):
+    n=len(matrix)
+    result=np.zeros((n,n))
+    for i in range(n):
+        for j in range(n):
+            result[j][n-1-i]=matrix[i][j]
+    return result
 
 def init_board(N):
     if N == -1:
@@ -32,6 +39,10 @@ def init_board(N):
     loaded_data = np.load('data' + str(N) +'.npy')
     
     other_groups_board = loaded_data[random.randint(0,len(loaded_data)-1)]
+
+    num_rotations = random.randint(0,3)
+    for _ in range(num_rotations):
+        other_groups_board=rotate_matrix_right(other_groups_board)
 
     for number in range(1,N+1):
         cell_group=[]
@@ -306,7 +317,7 @@ def solve_game(user, game_board, cell_groups, cell_groups_sums, game_solution, r
 
 
 if __name__=="__main__":
-    USER=False
+    USER=True
     games_completed={4:0, 5:0, 6:0, 7:0, 8:0}
     while True:
         if USER:
