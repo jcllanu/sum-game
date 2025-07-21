@@ -11,6 +11,24 @@ def rotate_matrix_right(matrix):
             result[j][n-1-i]=matrix[i][j]
     return result
 
+def vertical_symmetry(matrix):
+    n=len(matrix)
+    result=np.zeros((n,n))
+    for i in range(n):
+        for j in range(n):
+            result[n-1-i][j]=matrix[i][j]
+    return result
+
+
+def horizontal_symmetry(matrix):
+    n=len(matrix)
+    result=np.zeros((n,n))
+    for i in range(n):
+        for j in range(n):
+            result[i][n-1-j]=matrix[i][j]
+    return result
+
+
 def init_board(N):
     if N == -1:
         game_board = [[2,6,5,9,3,4,7,9,6],
@@ -43,6 +61,11 @@ def init_board(N):
     num_rotations = random.randint(0,3)
     for _ in range(num_rotations):
         other_groups_board=rotate_matrix_right(other_groups_board)
+    if random.randint(0,1)==0:
+        other_groups_board=horizontal_symmetry(other_groups_board)
+    if random.randint(0,1)==0:
+        other_groups_board=vertical_symmetry(other_groups_board)
+
 
     for number in range(1,N+1):
         cell_group=[]
@@ -96,7 +119,7 @@ def update_game_board(my_solution, game_board, cell_groups, cell_group_sum, curr
             my_solution[cell[0]][cell[1]] = 2
             text = 'Target sum: ' + str(cell_group_sum) +' Current sum: ' + str(current_groups_sums[group_index])+ '\nThe number '+\
                    str(game_board[cell[0]][cell[1]])+ ' can\'t be part of the solution.'
-            assert not game_solution[cell[0]][cell[1]],  "ERROR!!!!" + print(my_solution) +'\n'+print(game_board)+'\n'+print(game_solution)
+            assert not game_solution[cell[0]][cell[1]],  text + "ERROR!!!!" + str(my_solution) +'\n'+str(game_board)+'\n'+str(game_solution)
             return [cell, text]
     # Rule 2
     unset_cells=[cell for cell in cell_groups[group_index] if my_solution[cell[0]][cell[1]]==0]
@@ -110,7 +133,7 @@ def update_game_board(my_solution, game_board, cell_groups, cell_group_sum, curr
                    ' can\'t be reached using '+\
                    str([int(game_board[cell[0]][cell[1]]) for cell in unset_cells[:i]+unset_cells[i+1:]])
             
-            assert not game_solution[cell[0]][cell[1]],  "ERROR!!!!" + print(my_solution) +'\n'+print(game_board)+'\n'+print(game_solution)
+            assert not game_solution[cell[0]][cell[1]],  text + "ERROR!!!!" + str(my_solution) +'\n'+str(game_board)+'\n'+str(game_solution)
             return [cell, text]
         if not is_possible_to_sum(cell_group_sum - current_groups_sums[group_index], [game_board[cell[0]][cell[1]] for cell in unset_cells[:i]+unset_cells[i+1:]]):
             my_solution[cell[0]][cell[1]] = 1
@@ -123,7 +146,7 @@ def update_game_board(my_solution, game_board, cell_groups, cell_group_sum, curr
                 if cell in cell_groups[j]:
                     current_groups_sums[j] += game_board[cell[0]][cell[1]]
 
-            assert game_solution[cell[0]][cell[1]], "ERROR!!!!" + print(my_solution) +'\n'+print(game_board)+'\n'+print(game_solution)
+            assert game_solution[cell[0]][cell[1]], text + "ERROR!!!!" + str(my_solution) +'\n'+str(game_board)+'\n'+str(game_solution)
             return [cell, text]
     return []
 
@@ -254,8 +277,12 @@ def print_board(game_board, cell_groups, cell_groups_sums, my_solution, cell, ex
 
     return result
 
+def update_current_groups_sums(cell_groups, current_groups_sums, cell, game_board):
+    for i in range(len(cell_groups)):
+        if cell in cell_groups[i]:
+            current_groups_sums[i]+=game_board[cell[0]][cell[1]]
 
-def solve_game(user, game_board, cell_groups, cell_groups_sums, game_solution, root=None):
+def solve_game(USER, game_board, cell_groups, cell_groups_sums, game_solution, root=None):
     N = len(game_board)
     my_solution = np.zeros((N, N), int)
     current_groups_sums = np.zeros(len(cell_groups), int)
@@ -283,10 +310,12 @@ def solve_game(user, game_board, cell_groups, cell_groups_sums, game_solution, r
                 else:
                     my_solution[cell[0]][cell[1]]=2
                     text="Well done! \n Number "+ str(game_board[cell[0]][cell[1]]) +" doesn't belong to the solution."
+                    update_current_groups_sums(cell_groups, current_groups_sums, cell, game_board)
             else:
                 if game_solution[cell[0]][cell[1]]:
                     my_solution[cell[0]][cell[1]]=1
                     text="Well done! \n Number "+ str(game_board[cell[0]][cell[1]]) +" belongs to the solution."
+                    update_current_groups_sums(cell_groups, current_groups_sums, cell, game_board)
                 else:
                     text="Error!"
                     mistakes+=1   
@@ -317,7 +346,7 @@ def solve_game(user, game_board, cell_groups, cell_groups_sums, game_solution, r
 
 
 if __name__=="__main__":
-    USER=True
+    USER=input('User Mode? (True/False): ')=='True'
     games_completed={4:0, 5:0, 6:0, 7:0, 8:0}
     while True:
         if USER:
